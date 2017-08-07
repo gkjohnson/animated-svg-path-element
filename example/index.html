@@ -8,18 +8,39 @@
     <link rel="import" href="/animated-svg-path.html" />
 
     <style type="text/css">
-        html, body, animated-svg-path, svg {
+        html, body, svg {
             width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
             overflow: hidden;
+            display: block;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        animated-svg-path {
+            width: 100%;
+            height: 100px;
+            max-height: 500px;
+            display: block;
+            margin: auto;
+
+            flex: 1 1;
+        }
+
+        .buffer {
+            height: 100px;
         }
     </style>
 </head>
 <body>
+    <div class='buffer'></div>
     <animated-svg-path auto-play>
-        <svg>
+        <svg preserveaspectratio>
             <line order="0" fill="none" stroke="#000000" stroke-miterlimit="10" x1="320.903" y1="189.258" x2="115.742" y2="288.613"/>
             <line order="1" fill="none" stroke="#000000" stroke-miterlimit="10" x1="489.936" y1="281.516" x2="320.903" y2="189.258"/>
             <line order="2" fill="none" stroke="#000000" stroke-miterlimit="10" x1="501.5" y1="492" x2="489.936" y2="281.516"/>
@@ -31,8 +52,16 @@
             <line order="8" fill="none" stroke="#000000" stroke-miterlimit="10" x1="115.742" y1="288.613" x2="275.333" y2="393.667"/>
         </svg>
     </animated-svg-path>
+    <div class='buffer'></div>
+
     <script>
         const asp = document.querySelector('animated-svg-path')
+        const svg = document.querySelector('svg')
+        const bb = svg.getBBox()
+
+        // 'viewBox' is case-senstive... ???!!!
+        svg.setAttribute('viewBox', `${bb.x-5}, ${bb.y-5}, ${bb.width+5}, ${bb.height+5}`)
+
         document.addEventListener('click', () => asp.reset())
     </script>
 </body>

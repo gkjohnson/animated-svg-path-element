@@ -1,7 +1,6 @@
 <dom-module id="animated-svg-path">
     <template>
         <style type="text/css">
-
             [[_toSelector(_elements)]] {
                 stroke-dasharray: 0 100%;
             }
@@ -27,8 +26,6 @@
 
             }
         </style>
-
-        <div>ASDF</div>
     </template>
 </dom-module>
 <script type="text/javascript">
@@ -71,7 +68,7 @@
                     // the longest path
                     durationPerPath: {
                         type: Number,
-                        value: 1000
+                        value: 200
                     },
 
                     // If enabled then each paths takes a the same
@@ -134,6 +131,11 @@
             play() {
                 this._clear()
 
+                // If the playkey has changed, then that means this
+                // animation is invalidated
+                this._playKey++
+                const key = this._playKey
+
                 // Clear will remove the 'active' class
                 // to stop all css animations. We wait a frame
                 // here to make sure the css changes have
@@ -150,16 +152,14 @@
                         .map(p => p.getTotalLength())
                         .reduce((val, next) => next > val ? next : val)
 
-                    // If the playkey has changed, then that means this
-                    // animation is invalidated
-                    this._playKey++
-                    const key = this._playKey
+
 
                     // perform the animation
                     const _do = () => {
                         const coi = this._currentOrderIndex
                         const paths = this._getPaths(coi)
 
+                        // if there are no paths, that means it time to stop!
                         if (!paths || !paths.length) return
 
                         const len = paths
