@@ -4,6 +4,7 @@
   "description": "Polymer element that animates the drawing of SVG paths",
   "main": "index.js",
   "scripts": {
+    "serve": "static-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +20,8 @@
   "dependencies": {
     "@polymer/polymer": "^2.0.2",
     "webcomponentsjs": "^1.0.2"
+  },
+  "devDependencies": {
+    "static-server": "^2.0.5"
   }
 }

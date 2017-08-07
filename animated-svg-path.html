@@ -1,9 +1,153 @@
 <dom-module id="animated-svg-path">
+    <template>
+        <style type="text/css">
+
+            path {
+                stroke-dasharray: 0%,100%;
+                transition: stroke-dasharray [[_animationSpeed]]ms linear;
+
+                stroke: black;
+            }
+
+            path.animate {
+                display: inherit;
+                stroke-dasharray: 100%,0%;
+
+            }
+
+            path.completed {
+                display: inherit;
+                stroke-dasharray: 100%,0%;
+
+            }
+        </style>
+    </template>
 </dom-module>
 <script type="text/javascript">
     (function() {
-        class AnimatedSVGPath extends Polymer.element {
+        NodeList.prototype.map = Array.prototype.map
+        class AnimatedSVGPath extends Polymer.Element {
             static get is() { return 'animated-svg-path' }
+
+            static get properties() {
+                return {
+                    autoPlay: {
+                        type: Boolean,
+                        value: false,
+                        reflectToAttribute: true
+                    },
+
+                    loop: {
+                        type: Boolean,
+                        value: false,
+                        reflectToAttribute: true
+                    },
+
+                    durationPerPath: {
+                        type: Number,
+                        value: 1000
+                    },
+
+                    constantDrawTime: {
+                        type: Boolean,
+                        value: false,
+                        reflectToAttribute: true
+                    },
+
+                    _currentOrderIndex: {
+                        type: Number,
+                        value: 0
+                    },
+
+                    _animationSpeed: {
+                        type: Number,
+                        value: 0
+                    },
+
+                    _playKey: {
+                        type: Number,
+                        value: 0
+                    }
+                }
+            }
+
+            /* Overrides */
+            _attachDom(dom) {
+                this.appendChild(dom)
+            }
+
+            /* Lifecycle Functions */
+            connectedCallback() {
+                super.connectedCallback()
+                this.reset()
+            }
+
+            /* Public API */
+            play() {
+                const paths = this.querySelectorAll('path')
+                
+                // clear the current state
+                paths.forEach(p => {
+                    p.classList.remove('animate')
+                    p.classList.remove('completed')
+                })
+                this._currentOrderIndex = 0
+
+                // find the logest path for the case of
+                // non-constant animations
+                this._animationSpeed = this.durationPerPath
+                const maxPathLength = paths
+                    .map(p => p.getTotalLength())
+                    .reduce((val, next) => next > val ? next : val)
+                
+                // If the playkey has changed, then that means this
+                // animation is invalidated
+                this._playKey++
+                const key = this._playKey
+
+                // perform the animation
+                const _do = () => {
+                    const coi = this._currentOrderIndex
+                    const paths = this.querySelectorAll(`path[order="${coi}"]`)
+
+                    if (!paths || !paths.length) return
+
+                    let speed = this.durationPerPath
+
+                    if (!this.constantDrawTime) {
+                        const avgLen = paths
+                            .map(p => p.getTotalLength())
+                            .reduce((val, next, i) => val += next / (i + 1), 0)
+
+                        speed = this.durationPerPath * avgLen / maxPathLength
+                    }
+
+
+                    // TODO: For some reason the animations seem to finish
+                    // in half of the allocated time, so lets double the time
+                    // here and setTimeout for the expected time
+                    // Could have somethign to do with our dash being 100% rather
+                    // than 50%? But with 50%,%50 dasharray there's a lingering tail
+                    this._animationSpeed = speed * 2
+
+                    paths.forEach(p => p.classList.add('animate'))
+                    setTimeout(() => {
+                        paths.forEach(p => {
+                            if (this._playKey !== key) return
+
+                            p.classList.remove('animate')
+                            p.classList.add('completed')
+                            this._currentOrderIndex++
+                            _do()
+                        })
+                    }, speed)
+                }
+                _do()
+            }
+
+            reset() {
+                if (this.autoPlay) this.play()
+            }
         }
 
         customElements.define(AnimatedSVGPath.is, AnimatedSVGPath)
