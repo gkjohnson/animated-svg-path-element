@@ -2,18 +2,15 @@
     <template>
         <style type="text/css">
 
-            path,
-            line {
+            [[_toSelector(_elements)]] {
                 stroke-dasharray: 0 100%;
             }
 
-            path.active,
-            line.active {
+            [[_toSelector(_elements, '.active')]] {
                 transition: stroke-dasharray [[_animationSpeed]]ms ease-in-out;
             }
 
-            path.animate,
-            line.animate {
+            [[_toSelector(_elements, '.animate')]] {
                 /*
                     percent values in stroke-dasharray don't seem
                     to relate to the overall length of the path so
@@ -24,18 +21,14 @@
                 display: inherit;
             }
 
-            path.completed,
-            line.completed {
+            [[_toSelector(_elements, '.completed')]] {
                 display: inherit;
                 stroke-dasharray: 100% 100%;
 
             }
-
-            path.resetting,
-            line.resetting {
-                transition: none !important;
-            }
         </style>
+
+        <div>ASDF</div>
     </template>
 </dom-module>
 <script type="text/javascript">
@@ -115,6 +108,13 @@
                     _playKey: {
                         type: Number,
                         value: 0
+                    },
+
+                    // The list of elements this can apply to
+                    // All references to path should draw from this
+                    _elements: {
+                        type: Array,
+                        value: () => ['path', 'line']
                     }
                 }
             }
@@ -193,6 +193,11 @@
                 this._clear()
                 if (this.autoPlay) this.play()
             }
+            
+            /* Utilities */
+            _toSelector(arr, suf = '') {
+                return arr.map(el => `${el}${suf}`).join(',')
+            }
 
             /* Private Functions */
             // clear the current state
@@ -207,9 +212,8 @@
 
             // returns all the paths to animate
             _getPaths(order) {
-                let str = 'path, line'
-                if (order != null) str = `path[order="${order}"], line[order="${order}"]`
-                return this.querySelectorAll(str)
+                const selector = this._toSelector(this._elements, order == null ? '' : `[order="${order}"]`)
+                return this.querySelectorAll(selector)
             }
         }
 
