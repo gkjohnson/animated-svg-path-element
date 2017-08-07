@@ -2,23 +2,38 @@
     <template>
         <style type="text/css">
 
-            path {
-                stroke-dasharray: 0%,100%;
-                transition: stroke-dasharray [[_animationSpeed]]ms linear;
-
-                stroke: black;
+            path,
+            line {
+                stroke-dasharray: 0 100%;
             }
 
-            path.animate {
+            path.active,
+            line.active {
+                transition: stroke-dasharray [[_animationSpeed]]ms ease-in-out;
+            }
+
+            path.animate,
+            line.animate {
+                /*
+                    percent values in stroke-dasharray don't seem
+                    to relate to the overall length of the path so
+                    we have to set it to the explict path length
+                    to animate to
+                */
+                stroke-dasharray: [[_dashLength]] 100%;
                 display: inherit;
-                stroke-dasharray: 100%,0%;
+            }
+
+            path.completed,
+            line.completed {
+                display: inherit;
+                stroke-dasharray: 100% 100%;
 
             }
 
-            path.completed {
-                display: inherit;
-                stroke-dasharray: 100%,0%;
-
+            path.resetting,
+            line.resetting {
+                transition: none !important;
             }
         </style>
     </template>
@@ -89,6 +104,12 @@
                         value: 0
                     },
 
+                    // The length of the dash to currently animate to
+                    _dashLength: {
+                        type: Number,
+                        value: 0
+                    },
+
                     // Key used to check if an async animation loop
                     // has been invalidated
                     _playKey: {
@@ -113,56 +134,59 @@
             play() {
                 this._clear()
 
-                // find the logest path for the case of
-                // non-constant animations
-                this._animationSpeed = this.durationPerPath
-                const maxPathLength = this.querySelectorAll('path')
-                    .map(p => p.getTotalLength())
-                    .reduce((val, next) => next > val ? next : val)
-                
-                // If the playkey has changed, then that means this
-                // animation is invalidated
-                this._playKey++
-                const key = this._playKey
+                // Clear will remove the 'active' class
+                // to stop all css animations. We wait a frame
+                // here to make sure the css changes have
+                // flushed, stopping the last plays animations
+                // before starting agian
+                requestAnimationFrame(() => {
+                    // find the logest path for the case of
+                    // non-constant animations
+                    this._animationSpeed = this.durationPerPath
+                    const paths = this._getPaths()
+                    paths.forEach(p => p.classList.add('active'))
 
-                // perform the animation
-                const _do = () => {
-                    const coi = this._currentOrderIndex
-                    const paths = this.querySelectorAll(`path[order="${coi}"]`)
+                    const maxPathLength = paths
+                        .map(p => p.getTotalLength())
+                        .reduce((val, next) => next > val ? next : val)
 
-                    if (!paths || !paths.length) return
+                    // If the playkey has changed, then that means this
+                    // animation is invalidated
+                    this._playKey++
+                    const key = this._playKey
 
-                    let speed = this.durationPerPath
+                    // perform the animation
+                    const _do = () => {
+                        const coi = this._currentOrderIndex
+                        const paths = this._getPaths(coi)
 
-                    if (!this.constantDrawTime) {
-                        const avgLen = paths
-                            .map(p => p.getTotalLength())
-                            .reduce((val, next, i) => val += next / (i + 1), 0)
+                        if (!paths || !paths.length) return
 
-                        speed = this.durationPerPath * avgLen / maxPathLength
+                        const len = paths
+                                .map(p => p.getTotalLength())
+                                .reduce((val, next, i) => val += next / (i + 1), 0)
+                        let speed = this.durationPerPath
+
+                        if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength
+
+                        // set the css styles to interpolate to
+                        this._animationSpeed = speed
+                        this._dashLength = len
+
+                        paths.forEach(p => p.classList.add('animate'))
+                        setTimeout(() => {
+                            paths.forEach(p => {
+                                if (this._playKey !== key) return
+
+                                p.classList.remove('animate')
+                                p.classList.add('completed')
+                                this._currentOrderIndex++
+                                _do()
+                            })
+                        }, speed)
                     }
-
-
-                    // TODO: For some reason the animations seem to finish
-                    // in half of the allocated time, so lets double the time
-                    // here and setTimeout for the expected time
-                    // Could have somethign to do with our dash being 100% rather
-                    // than 50%? But with 50%,%50 dasharray there's a lingering tail
-                    this._animationSpeed = speed * 2
-
-                    paths.forEach(p => p.classList.add('animate'))
-                    setTimeout(() => {
-                        paths.forEach(p => {
-                            if (this._playKey !== key) return
-
-                            p.classList.remove('animate')
-                            p.classList.add('completed')
-                            this._currentOrderIndex++
-                            _do()
-                        })
-                    }, speed)
-                }
-                _do()
+                    _do()
+                })
             }
 
             reset() {
@@ -172,12 +196,20 @@
 
             /* Private Functions */
             // clear the current state
-            _clear() {               
-                this.querySelectorAll('path').forEach(p => {
+            _clear() {
+                this._getPaths().forEach(p => {
+                    p.classList.remove('active')
                     p.classList.remove('animate')
                     p.classList.remove('completed')
                 })
                 this._currentOrderIndex = 0
+            }
+
+            // returns all the paths to animate
+            _getPaths(order) {
+                let str = 'path, line'
+                if (order != null) str = `path[order="${order}"], line[order="${order}"]`
+                return this.querySelectorAll(str)
             }
         }
 

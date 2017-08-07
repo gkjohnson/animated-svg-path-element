@@ -20,14 +20,20 @@
 <body>
     <animated-svg-path auto-play>
         <svg>
-            <path order="0" fill="none" stroke="#000000" stroke-miterlimit="10" d="M208,143.452c-27.742,13.548-58.064,8.387-69.032,77.419
-                s16.774,128.387,65.161,140.645s201.291,10.322,219.355-52.903s26.452-133.548,0-153.548"/>
-            <path order="1" fill="none" stroke="#000000" stroke-miterlimit="10" d="M278.323,62.807c-9.678,3.871-38.065,108.387-14.194,135.484
-                s80.645,137.419,147.097,149.032s109.678-32.904,111.613-96.129S484.773,72.484,462.193,74.419"/>
-            <path order="2" fill="none" stroke="#000000" stroke-miterlimit="10" d="M343.484,117.645c-29.678,9.032-96.13,50.322-106.452,60
-                s-36.129,42.581-44.516,60.646s-33.548,75.483-30.322,103.226s-5.162,38.708,29.677,63.871s75.483,45.161,125.161,40
-                s84.517-5.806,100.646-24.516s32.257-14.838,33.548-60c1.291-45.162-15.484-101.936-27.097-112.258s-21.29-21.935-28.387-25.161"/>
+            <line order="0" fill="none" stroke="#000000" stroke-miterlimit="10" x1="320.903" y1="189.258" x2="115.742" y2="288.613"/>
+            <line order="1" fill="none" stroke="#000000" stroke-miterlimit="10" x1="489.936" y1="281.516" x2="320.903" y2="189.258"/>
+            <line order="2" fill="none" stroke="#000000" stroke-miterlimit="10" x1="501.5" y1="492" x2="489.936" y2="281.516"/>
+            <line order="3" fill="none" stroke="#000000" stroke-miterlimit="10" x1="306" y1="612.667" x2="501.5" y2="492"/>
+            <line order="4" fill="none" stroke="#000000" stroke-miterlimit="10" x1="154.333" y1="495" x2="306" y2="612.667"/>
+            <line order="5" fill="none" stroke="#000000" stroke-miterlimit="10" x1="115.742" y1="288.613" x2="154.333" y2="495"/>
+            <line order="6" fill="none" stroke="#000000" stroke-miterlimit="10" x1="275.333" y1="393.667" x2="306" y2="612.667"/>
+            <line order="7" fill="none" stroke="#000000" stroke-miterlimit="10" x1="489.936" y1="281.516" x2="275.333" y2="393.667"/>
+            <line order="8" fill="none" stroke="#000000" stroke-miterlimit="10" x1="115.742" y1="288.613" x2="275.333" y2="393.667"/>
         </svg>
     </animated-svg-path>
+    <script>
+        const asp = document.querySelector('animated-svg-path')
+        document.addEventListener('click', () => asp.reset())
+    </script>
 </body>
 </html>
