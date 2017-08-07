@@ -24,46 +24,73 @@
     </template>
 </dom-module>
 <script type="text/javascript">
+    // animated-svg-path element
+    // An element that houses any collection of paths as children and animates drawing them
+    // The order the paths are drawn is is determined by the "order" attribute
+
+    /*
+    Example:
+    <animated-svg-path>
+        <svg>
+            <path order="0" ... />
+            <path order="1" ... />
+        </svg>
+    </animated-svg-path>
+    */
+
     (function() {
+        // Mapping a nodelist isn't available so we create our
+        // own version
+        // TODO: This isn't great... this shouldn't have to modify
+        // global prototypes
         NodeList.prototype.map = Array.prototype.map
         class AnimatedSVGPath extends Polymer.Element {
             static get is() { return 'animated-svg-path' }
 
             static get properties() {
                 return {
+                    // Whether or not to animage the
+                    // SVG drawing immediately or not 
                     autoPlay: {
                         type: Boolean,
                         value: false,
                         reflectToAttribute: true
                     },
 
-                    loop: {
-                        type: Boolean,
-                        value: false,
-                        reflectToAttribute: true
-                    },
-
+                    // How long to take to draw each path
+                    // If constant-draw-time isn't enabled
+                    // then this is the time it takes to draw
+                    // the longest path
                     durationPerPath: {
                         type: Number,
                         value: 1000
                     },
 
+                    // If enabled then each paths takes a the same
+                    // amount of time to draw. So short paths will
+                    // take a long time to drwa while long paths
+                    // will draw fast
                     constantDrawTime: {
                         type: Boolean,
                         value: false,
                         reflectToAttribute: true
                     },
 
+                    // The current index of paths to draw
                     _currentOrderIndex: {
                         type: Number,
                         value: 0
                     },
 
+                    // The current speed to animate at
+                    // Bound in the above style tag
                     _animationSpeed: {
                         type: Number,
                         value: 0
                     },
 
+                    // Key used to check if an async animation loop
+                    // has been invalidated
                     _playKey: {
                         type: Number,
                         value: 0
@@ -84,19 +111,12 @@
 
             /* Public API */
             play() {
-                const paths = this.querySelectorAll('path')
-                
-                // clear the current state
-                paths.forEach(p => {
-                    p.classList.remove('animate')
-                    p.classList.remove('completed')
-                })
-                this._currentOrderIndex = 0
+                this._clear()
 
                 // find the logest path for the case of
                 // non-constant animations
                 this._animationSpeed = this.durationPerPath
-                const maxPathLength = paths
+                const maxPathLength = this.querySelectorAll('path')
                     .map(p => p.getTotalLength())
                     .reduce((val, next) => next > val ? next : val)
                 
@@ -146,7 +166,18 @@
             }
 
             reset() {
+                this._clear()
                 if (this.autoPlay) this.play()
+            }
+
+            /* Private Functions */
+            // clear the current state
+            _clear() {               
+                this.querySelectorAll('path').forEach(p => {
+                    p.classList.remove('animate')
+                    p.classList.remove('completed')
+                })
+                this._currentOrderIndex = 0
             }
         }
 
