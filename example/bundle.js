@@ -8007,10 +8007,6 @@ Example:
                     const len = paths.map(p => this._getLength(p)).reduce((val, next, i) => val += next / (i + 1), 0);
                     let speed = this.durationPerPath;
 
-                    console.log(paths.map(p => this._getLength(p)));
-
-                    console.log(this.durationPerPath, len, maxPathLength);
-
                     if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength;
 
                     // Update ths tyles on each path to animate
