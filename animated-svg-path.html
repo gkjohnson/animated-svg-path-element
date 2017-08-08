@@ -6,7 +6,7 @@
             }
 
             [[_toSelector(_elements, '.active')]] {
-                transition: stroke-dasharray [[_animationSpeed]]ms ease-in-out;
+                transition: stroke-dasharray [[_animationSpeed]]ms [[animationCurve]];
             }
 
             [[_toSelector(_elements, '.animate')]] {
@@ -81,6 +81,23 @@
                         reflectToAttribute: true
                     },
 
+                    // The animation curve type to use for the css
+                    // transition
+                    animationCurve: {
+                        type: String,
+                        value: 'ease-in-out',
+                        reflectToAttribute: true
+                    },
+
+                    // Boolean indicating whether or not the
+                    // element is playing or not
+                    playing: {
+                        type: Boolean,
+                        value: false,
+                        reflectToAttribute: true,
+                        notify: true
+                    },
+
                     // The current index of paths to draw
                     _currentOrderIndex: {
                         type: Number,
@@ -152,15 +169,18 @@
                         .map(p => p.getTotalLength())
                         .reduce((val, next) => next > val ? next : val)
 
-
-
                     // perform the animation
                     const _do = () => {
+                        this.playing = true
+
                         const coi = this._currentOrderIndex
                         const paths = this._getPaths(coi)
 
                         // if there are no paths, that means it time to stop!
-                        if (!paths || !paths.length) return
+                        if (!paths || !paths.length) {
+                            this.playing = false
+                            return
+                        }
 
                         const len = paths
                                 .map(p => p.getTotalLength())
@@ -208,6 +228,7 @@
                     p.classList.remove('completed')
                 })
                 this._currentOrderIndex = 0
+                this.playing = false
             }
 
             // returns all the paths to animate

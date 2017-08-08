@@ -30,6 +30,13 @@
             margin: auto;
 
             flex: 1 1;
+
+            opacity: 0.25;
+            transition: opacity 1s ease;
+        }
+
+        animated-svg-path[playing] {
+            opacity: 1;
         }
 
         .buffer {
