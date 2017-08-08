@@ -1,38 +1,22 @@
+<style type="text/css">
+    animated-svg-path path,
+    animated-svg-path line {
+        /*
+            Set the empty space to a very high number to guarantee
+            (more or less) that that number is hidden to start
+        */
+        stroke-dasharray: 0 100000;
+    }
+
+    animated-svg-path path.completed,
+    animated-svg-path line.completed {
+        stroke-dasharray: 1 0;
+        transition: none;
+    }
+</style>
+
 <dom-module id="animated-svg-path">
-    <template>
-        <style type="text/css">
-            path,
-            line {
-                /*
-                    Set the empty space to a very high number to guarantee
-                    (more or less) that that number is hidden to start
-                */
-                stroke-dasharray: 0 100000;
-            }
-
-            path.active,
-            line.active {
-                transition: stroke-dasharray [[_animationSpeed]]ms [[animationCurve]];
-            }
-
-            path.animate, 
-            line.animate {
-                /*
-                    percent values in stroke-dasharray don't seem
-                    to relate to the overall length of the path so
-                    we have to set it to the explict path length
-                    to animate to
-                */
-                stroke-dasharray: [[_dashLength]] 100000;
-            }
-
-            path.completed,
-            line.completed {
-                stroke-dasharray: 1 0;
-                transition: none;
-            }
-        </style>
-    </template>
+    <template></template>
 </dom-module>
 <script type="text/javascript">
     // animated-svg-path element
@@ -159,60 +143,52 @@
                 this._playKey++
                 const key = this._playKey
 
-                // Clear will remove the 'active' class
-                // to stop all css animations. We wait a frame
-                // here to make sure the css changes have
-                // flushed, stopping the last plays animations
-                // before starting agian
-                requestAnimationFrame(() => {
-                    // find the logest path for the case of
-                    // non-constant animations
-                    this._animationSpeed = this.durationPerPath
-                    const paths = this._getPaths()
-                    paths.forEach(p => p.classList.add('active'))
+                // find the longest path for the case of
+                // non-constant animations
+                this._animationSpeed = this.durationPerPath
+                const paths = this._getPaths()
+                const maxPathLength = paths
+                    .map(p => this._getLength(p))
+                    .reduce((val, next) => next > val ? next : val)
 
-                    const maxPathLength = paths
-                        .map(p => this._getLength(p))
-                        .reduce((val, next) => next > val ? next : val)
+                // perform the animation
+                const _do = () => {
+                    this.playing = true
 
-                    // perform the animation
-                    const _do = () => {
-                        this.playing = true
+                    const coi = this._currentOrderIndex
+                    const paths = this._getPaths(coi)
 
-                        const coi = this._currentOrderIndex
-                        const paths = this._getPaths(coi)
-
-                        // if there are no paths, that means it time to stop!
-                        if (!paths || !paths.length) {
-                            this.playing = false
-                            return
-                        }
-
-                        const len = paths
-                                .map(p => this._getLength(p))
-                                .reduce((val, next, i) => val += next / (i + 1), 0)
-                        let speed = this.durationPerPath
-
-                        if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength
-
-                        // set the css styles to interpolate to
-                        this._animationSpeed = speed
-                        this._dashLength = len
-
-                        paths.forEach(p => p.classList.add('animate'))
-                        setTimeout(() => {
-                            paths.forEach(p => {
-                                if (this._playKey !== key) return
-
-                                p.classList.remove('animate')
-                                p.classList.add('completed')
-                                this._currentOrderIndex++
-                                _do()
-                            })
-                        }, speed)
+                    // if there are no paths, that means it time to stop!
+                    if (!paths || !paths.length) {
+                        this.playing = false
+                        return
                     }
-                    _do()
-                })
+
+                    const len = paths
+                            .map(p => this._getLength(p))
+                            .reduce((val, next, i) => val += next / (i + 1), 0)
+                    let speed = this.durationPerPath
+
+                    if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength
+
+                    // set the css styles to interpolate to
+                    this._animationSpeed = speed
+                    this._dashLength = len
+
+                    paths.forEach(p => p.setAttribute('style', this._getTransitionStyle(this._animationSpeed, this.animationCurve, this._dashLength)))
+                    setTimeout(() => {
+                        paths.forEach(p => {
+                            if (this._playKey !== key) return
+
+                            p.removeAttribute('style')
+                            p.classList.add('completed')
+                            this._currentOrderIndex++
+
+                            _do()
+                        })
+                    }, speed)
+                }
+                _do()
             }
 
             reset() {
@@ -238,13 +214,26 @@
                 }
             }
 
+            _getTransitionStyle(animationSpeed, animationCurve, dashLength) {
+                return `
+                transition: stroke-dasharray ${animationSpeed}ms ${animationCurve};
+                stroke-dasharray: ${dashLength} ${dashLength};
+                `
+            }
+
             /* Private Functions */
             // clear the current state
             _clear() {
                 this._getPaths().forEach(p => {
-                    p.classList.remove('active')
-                    p.classList.remove('animate')
+                    p.removeAttribute('style')
                     p.classList.remove('completed')
+
+                    // force the browser to flush styles
+                    // so we don't get transition artifacts
+                    // on reset. If we don't read a property
+                    // then it doesn't seem to do anything
+                    // in firefox
+                    window.getComputedStyle(p).width
                 })
                 this._currentOrderIndex = 0
                 this.playing = false
