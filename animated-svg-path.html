@@ -94,19 +94,6 @@
                         value: 0
                     },
 
-                    // The current speed to animate at
-                    // Bound in the above style tag
-                    _animationSpeed: {
-                        type: Number,
-                        value: 0
-                    },
-
-                    // The length of the dash to currently animate to
-                    _dashLength: {
-                        type: Number,
-                        value: 0
-                    },
-
                     // Key used to check if an async animation loop
                     // has been invalidated
                     _playKey: {
@@ -145,7 +132,6 @@
 
                 // find the longest path for the case of
                 // non-constant animations
-                this._animationSpeed = this.durationPerPath
                 const paths = this._getPaths()
                 const maxPathLength = paths
                     .map(p => this._getLength(p))
@@ -171,11 +157,14 @@
 
                     if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength
 
-                    // set the css styles to interpolate to
-                    this._animationSpeed = speed
-                    this._dashLength = len
+                    // Update ths tyles on each path to animate
+                    paths.forEach(p => {
+                        const style = this._getTransitionStyle(speed, this.animationCurve, len)
+                        p.setAttribute('style', style)
+                    })
+                    console.log(speed)
 
-                    paths.forEach(p => p.setAttribute('style', this._getTransitionStyle(this._animationSpeed, this.animationCurve, this._dashLength)))
+                    // Wait until the animations are done
                     setTimeout(() => {
                         paths.forEach(p => {
                             if (this._playKey !== key) return
