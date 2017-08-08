@@ -2,7 +2,7 @@
     <template>
         <style type="text/css">
             [[_toSelector(_elements)]] {
-                stroke-dasharray: 0 100%;
+                stroke-dasharray: 0 100000;
             }
 
             [[_toSelector(_elements, '.active')]] {
@@ -16,14 +16,14 @@
                     we have to set it to the explict path length
                     to animate to
                 */
-                stroke-dasharray: [[_dashLength]] 100%;
+                stroke-dasharray: [[_dashLength]] 100000;
                 display: inherit;
             }
 
             [[_toSelector(_elements, '.completed')]] {
                 display: inherit;
-                stroke-dasharray: 100% 100%;
-
+                stroke-dasharray: 1 0;
+                transition: none;
             }
         </style>
     </template>
@@ -68,7 +68,7 @@
                     // the longest path
                     durationPerPath: {
                         type: Number,
-                        value: 200
+                        value: 2000
                     },
 
                     // If enabled then each paths takes a the same
