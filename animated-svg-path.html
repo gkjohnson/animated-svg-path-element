@@ -170,7 +170,7 @@
                     paths.forEach(p => p.classList.add('active'))
 
                     const maxPathLength = paths
-                        .map(p => p.getTotalLength())
+                        .map(p => this._getLength(p))
                         .reduce((val, next) => next > val ? next : val)
 
                     // perform the animation
@@ -187,7 +187,7 @@
                         }
 
                         const len = paths
-                                .map(p => p.getTotalLength())
+                                .map(p => this._getLength(p))
                                 .reduce((val, next, i) => val += next / (i + 1), 0)
                         let speed = this.durationPerPath
 
@@ -221,6 +221,19 @@
             /* Utilities */
             _toSelector(arr, suf = '') {
                 return arr.map(el => `${el}${suf}`).join(',')
+            }
+
+            _getLength(el) {
+                const tagName = el.tagName.toLowerCase()
+                if (tagName === 'path' || el.getTotalLength) {
+                    return el.getTotalLength()
+                } else if(tagName === 'line') {
+                    const xd = parseFloat(el.getAttribute('x2')) - parseFloat(el.getAttribute('x1'))
+                    const yd = parseFloat(el.getAttribute('y2')) - parseFloat(el.getAttribute('y1'))
+                    return Math.sqrt(xd * xd + yd * yd)
+                } else {
+                    console.error('Length function not defined for ', el)
+                }
             }
 
             /* Private Functions */

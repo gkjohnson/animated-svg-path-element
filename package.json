@@ -19,7 +19,7 @@
   "homepage": "https://github.com/gkjohnson/animated-path-svg-element#readme",
   "dependencies": {
     "@polymer/polymer": "^2.0.2",
-    "webcomponentsjs": "^1.0.2"
+    "@webcomponents/webcomponentsjs": "github:webcomponents/webcomponentsjs"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
