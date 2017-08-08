@@ -7910,7 +7910,7 @@ Example:
                 // the longest path
                 durationPerPath: {
                     type: Number,
-                    value: 1200
+                    value: 500
                 },
 
                 // If enabled then each paths takes a the same
@@ -7982,50 +7982,58 @@ Example:
             this._playKey++;
             const key = this._playKey;
 
-            // find the longest path for the case of
-            // non-constant animations
-            const paths = this._getPaths();
-            const maxPathLength = paths.map(p => this._getLength(p)).reduce((val, next) => next > val ? next : val);
+            // It seems that paths are returning zero length on
+            // first run when being added into the page, which is
+            // causing issues, so we wait until the next frame
+            requestAnimationFrame(() => {
+                // find the longest path for the case of
+                // non-constant animations
+                const paths = this._getPaths();
+                const maxPathLength = paths.map(p => this._getLength(p)).reduce((val, next) => next > val ? next : val);
 
-            // perform the animation
-            const _do = () => {
-                this.playing = true;
+                // perform the animation
+                const _do = () => {
+                    this.playing = true;
 
-                const coi = this._currentOrderIndex;
-                const paths = this._getPaths(coi);
+                    const coi = this._currentOrderIndex;
+                    const paths = this._getPaths(coi);
 
-                // if there are no paths, that means it time to stop!
-                if (!paths || !paths.length) {
-                    this.playing = false;
-                    return;
-                }
+                    // if there are no paths, that means it time to stop!
+                    if (!paths || !paths.length) {
+                        this.playing = false;
+                        return;
+                    }
 
-                const len = paths.map(p => this._getLength(p)).reduce((val, next, i) => val += next / (i + 1), 0);
-                let speed = this.durationPerPath;
+                    const len = paths.map(p => this._getLength(p)).reduce((val, next, i) => val += next / (i + 1), 0);
+                    let speed = this.durationPerPath;
 
-                if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength;
+                    console.log(paths.map(p => this._getLength(p)));
 
-                // Update ths tyles on each path to animate
-                paths.forEach(p => {
-                    const style = this._getTransitionStyle(speed, this.animationCurve, len);
-                    p.setAttribute('style', style);
-                });
-                console.log(speed);
+                    console.log(this.durationPerPath, len, maxPathLength);
 
-                // Wait until the animations are done
-                setTimeout(() => {
+                    if (!this.constantDrawTime) speed = this.durationPerPath * len / maxPathLength;
+
+                    // Update ths tyles on each path to animate
                     paths.forEach(p => {
-                        if (this._playKey !== key) return;
-
-                        p.removeAttribute('style');
-                        p.classList.add('completed');
-                        this._currentOrderIndex++;
-
-                        _do();
+                        const style = this._getTransitionStyle(speed, this.animationCurve, len);
+                        p.setAttribute('style', style);
                     });
-                }, speed);
-            };
-            _do();
+
+                    // Wait until the animations are done
+                    setTimeout(() => {
+                        paths.forEach(p => {
+                            if (this._playKey !== key) return;
+
+                            p.removeAttribute('style');
+                            p.classList.add('completed');
+                            this._currentOrderIndex++;
+
+                            _do();
+                        });
+                    }, speed);
+                };
+                _do();
+            });
         }
 
         reset() {
