@@ -7858,7 +7858,7 @@ __webpack_require__(2);
 /***/ (function(module, exports) {
 
 /*__wc__loader*/!function (a) {
-    var b = "<dom-module id=\"animated-svg-path\">\n    <template>\n        <style type=\"text/css\">[[_toSelector(_elements)]]{/* Set the empty space to a very high number to guarantee (more or less) that that number is hidden to start */ stroke-dasharray:0 100000;}[[_toSelector(_elements,'.active')]]{transition:stroke-dasharray [[_animationSpeed]]ms [[animationCurve]];}[[_toSelector(_elements,'.animate')]]{/* percent values in stroke-dasharray don't seem to relate to the overall length of the path so we have to set it to the explict path length to animate to */ stroke-dasharray:[[_dashLength]] 100000;display:inherit;}[[_toSelector(_elements,'.completed')]]{display:inherit;stroke-dasharray:1 0;transition:none;}</style>\n    </template>\n</dom-module>\n";if (a.body) {
+    var b = "<dom-module id=\"animated-svg-path\">\n    <template>\n        <style type=\"text/css\">path,line{/* Set the empty space to a very high number to guarantee (more or less) that that number is hidden to start */ stroke-dasharray:0 100000;}path.active,line.active{transition:stroke-dasharray [[_animationSpeed]]ms [[animationCurve]];}path.animate,line.animate{/* percent values in stroke-dasharray don't seem to relate to the overall length of the path so we have to set it to the explict path length to animate to */ stroke-dasharray:[[_dashLength]] 100000;}path.completed,line.completed{stroke-dasharray:1 0;transition:none;}</style>\n    </template>\n</dom-module>\n";if (a.body) {
         var c = a.body,
             d = a.createElement("div");for (d.innerHTML = b; d.children.length > 0;) c.appendChild(d.children[0]);
     } else a.write(b);

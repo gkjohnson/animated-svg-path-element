@@ -1,7 +1,8 @@
 <dom-module id="animated-svg-path">
     <template>
         <style type="text/css">
-            [[_toSelector(_elements)]] {
+            path,
+            line {
                 /*
                     Set the empty space to a very high number to guarantee
                     (more or less) that that number is hidden to start
@@ -9,11 +10,13 @@
                 stroke-dasharray: 0 100000;
             }
 
-            [[_toSelector(_elements, '.active')]] {
+            path.active,
+            line.active {
                 transition: stroke-dasharray [[_animationSpeed]]ms [[animationCurve]];
             }
 
-            [[_toSelector(_elements, '.animate')]] {
+            path.animate, 
+            line.animate {
                 /*
                     percent values in stroke-dasharray don't seem
                     to relate to the overall length of the path so
@@ -21,11 +24,10 @@
                     to animate to
                 */
                 stroke-dasharray: [[_dashLength]] 100000;
-                display: inherit;
             }
 
-            [[_toSelector(_elements, '.completed')]] {
-                display: inherit;
+            path.completed,
+            line.completed {
                 stroke-dasharray: 1 0;
                 transition: none;
             }
